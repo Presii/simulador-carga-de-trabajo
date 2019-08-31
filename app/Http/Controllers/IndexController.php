@@ -10,61 +10,136 @@ class IndexController extends Controller
     public function index(Request $request,Faker $faker)
     {
         $params = $request->query();
+        $filter=false;
         //select demanda para mes 1, año 1 de la BD
-        //$demanda = \App\DemandMonthly::where('idMes',1)->where('idAnio',1)->get();
-        //capacidad*8=capacidad_real
-        $capacidadReal = $params['capacidad']*8;
-        //capacidad_real/horas por tarea=no_tareas
-        $cantidadTareas = $capacidadReal/$params['horas'];
-
-        //-demanda/30=demanda diaria
-        $dailyDemand = $cantidadTareas/30;
-
-        //-demanda diaria/no_tareas=cantidad_operadores
-        $cantidadOperadores = $dailyDemand/$cantidadTareas;
-        //-guardar operadores en la base
-        $team = factory(\App\Personal::class,$cantidadOperadores)->create([
-            'idMes' => 1,
-            'Salario_tarea'=>20
-        ]);
-
-        //(numero de operadores con calificación 1)
-        $opc1=$cantidadTareas*0.02;
-        //(numero de operadores con calificacion 2 y 3)
-        $opc23=$cantidadTareas*0.08;
-        //(numero de operadores calificacion 4  y 5)
-        $op45=$cantidadTareas*0.9;
-
         //Iniciar asignación de tareas
         $mes = 1;
-
-        while ($mes<=12) {
-            $mes++;
-            /*foreach ($team as $operador) 
-            {
-                $n=5; 
-                $j=1;
-                $calificacion=j; 
-                $task = new \App\Task();
-                $task->calificacion=$faker->optional()->passthrough(mt_rand(1, 5));
-                $task->idOperador = $operador->id;
-                $task->idMes=$mes;
-                $task->save();
-            }*/
-        }
-
-        foreach ($team as $operador) 
+        while ($mes<=12 && array_key_exists("capacidad",$params)) 
         {
-            $n=5; 
-            $j=1;
-            $calificacion=j; 
-            $task = new \App\Task();
-            $task->calificacion=$faker->optional()->passthrough(mt_rand(1, 5));
-            $task->idOperador = $operador->id;
-            $task->idMes=$mes;
-            $task->save();
-        }
+            $filter=true;
+            $demanda = \App\DemandMonthly::where('id',$mes)->where('idAnio',1)->get();
+            
+            $demanda=$demanda->first()->demanda;
+            
+            //capacidad*8=capacidad_real
+            $capacidadReal = $params['capacidad']*8;
+            //capacidad_real/horas por tarea=no_tareas
+            $cantidadTareas = $capacidadReal/$params['horas'];
 
+            //-demanda/30=demanda diaria
+            $dailyDemand = $demanda/30;
+
+            //-demanda diaria/no_tareas=cantidad_operadores
+            $cantidadOperadores = ceil($dailyDemand/$cantidadTareas);
+            //-guardar operadores en la base
+            
+            if($cantidadOperadores>0)
+            {
+                $team = factory(\App\Personal::class,$cantidadOperadores)->create([
+                    'idMes' => $mes,
+                    'Salario_tarea'=>20
+                    ]);
+                  
+                    //(numero de operadores con calificación 1)
+                    $opc1=$cantidadTareas*0.02;
+                    //(numero de operadores con calificacion 2 y 3)
+                    $opc23=$cantidadTareas*0.08;
+                    //(numero de operadores calificacion 4  y 5)
+                    $op45=$cantidadTareas*0.9;
+                    
+                    for ($i=0; $i <$demanda ; $i++) 
+                    { 
+                        
+                        $n=5; 
+                        $j=1;
+                        foreach ($team as $operador) 
+                        {
+                            
+                            $calificacion=$faker->passthrough(mt_rand(1, 5)); 
+                            
+                            //Guardar tarea en BD
+                            $task = new \App\Task();
+                            $task->calificacion=$calificacion;
+                            $task->idOperador = $operador->id;
+                            $task->idMes=$mes;
+                            $task->save();
+                            
+                            //j+1;
+                            $j=$j+1;
+                            
+                            //If j=n then j=1;
+                            if($j==$n)
+                            $j=1;
+                            
+                            //Procedimiento de clasificación
+                            if ($calificacion==5) 
+                            $categoria="A";
+                            if($calificacion>=4 && $calificacion<5) 
+                            $categoria="B";
+                            if($calificacion>=3 && $calificacion<4)
+                            $categoria="C";
+                            if ($calificacion>=2&&$calificacion<3)
+                            $categoria="D";
+                            if ($calificacion>=1 &&$calificacion<2)
+                            $categoria="E";
+                            $categoryResume = new \App\CategoryResume();
+                            $categoryResume->idOperador=$operador->id;
+                            $categoryResume->categoria=$categoria;
+                            $categoryResume->save();
+                        }
+                        $c5=\App\CategoryResume::where('Categoria','A')->get()->count();
+                        $c4=\App\CategoryResume::where('Categoria','B')->get()->count();
+                        $c3=\App\CategoryResume::where('Categoria','C')->get()->count();
+                        $c2=\App\CategoryResume::where('Categoria','D')->get()->count();
+                        $c1=\App\CategoryResume::where('Categoria','E')->get()->count();
+
+                        if ($c4+$c5==$op45)
+                         $setcalif45=false;
+                        if ($c2+$c3==$opc23)
+                            $setcalif23=false;
+                        if ($c1==$opc1)
+                            $setcalif1=false;
+                            foreach ($team as $operador) 
+                            {
+                                
+                                $calificacion=$faker->passthrough(mt_rand(1, 5)); 
+                                
+                                //Guardar tarea en BD
+                                $task = new \App\Task();
+                                $task->calificacion=$calificacion;
+                                $task->idOperador = $operador->id;
+                                $task->idMes=$mes;
+                                $task->save();
+                                
+                                //j+1;
+                                $j=$j+1;
+                                
+                                //If j=n then j=1;
+                                if($j==$n)
+                                $j=1;
+                                
+                                //Procedimiento de clasificación
+                                if ($calificacion==5) 
+                                $categoria="A";
+                                if($calificacion>=4 && $calificacion<5) 
+                                $categoria="B";
+                                if($calificacion>=3 && $calificacion<4)
+                                $categoria="C";
+                                if ($calificacion>=2&&$calificacion<3)
+                                $categoria="D";
+                                if ($calificacion>=1 &&$calificacion<2)
+                                $categoria="E";
+                                $categoryResume = new \App\CategoryResume();
+                                $categoryResume->idOperador=$operador->id;
+                                $categoryResume->categoria=$categoria;
+                                $categoryResume->save();
+                            }
+
+                    }
+            }
+            
+            $mes=$mes+1;
+        }
 
 
 
@@ -74,7 +149,7 @@ class IndexController extends Controller
 *Iniciar asignación de tareas
 mes=1;
 While mes<=12
-For each demanda
+For demanda
 For each numero de operadores (asignar primeras tareas)
 n=5; j=1;
 calificacion=j; 
@@ -122,7 +197,8 @@ End For
 mes=mes+1;
 End For
 */
-
-        return view('welcome')->with($params);
+    $demandMonthly= \App\DemandMonthly::get()->pluck('demanda','id')->flatten();
+    
+    return view('welcome')->with(['data_keys'=>$demandMonthly->keys(),"data"=>$demandMonthly->values(),"filter"=>$filter]);
     }
 }
