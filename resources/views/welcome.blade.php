@@ -17,7 +17,38 @@
 
   <!-- Custom styles for this template-->
   <link href="{{asset('css/sb-admin-2.min.css')}}" rel="stylesheet">
+  <style>
+		.dropbtn {
+					padding: 16px;
+					font-size: 16px;
+					border: none;
+				}
 
+		.dropdown {
+					position: relative;
+					display: inline-block;
+				}
+
+		.dropdown-content {
+					display: none;
+					position: absolute;
+					background-color: lightgrey;
+					min-width: 200px;
+					z-index: 1;
+							}
+
+		.dropdown-content a {
+					color: black;
+					padding: 12px 16px;
+					text-decoration: none;
+					display: block;
+							}
+
+		.dropdown-content a:hover {background-color: white;}
+		.dropdown:hover .dropdown-content {display: block;}
+		.dropdown:hover .dropbtn {background-color: grey;}
+
+    </style>
 </head>
 
 <body id="page-top">
@@ -96,46 +127,14 @@
             <h1 class="h3 mb-0 text-gray-800">Simulacion</h1>
           </div>
 
-		<form>
+		<form method="GET" action="/">
 		Tareas:<br>
 		<input type="text" name="tareas"><br>
 		<br>
 		Cantidad de horas por trabajo:<br>
-		<style>
-		.dropbtn {
-					padding: 16px;
-					font-size: 16px;
-					border: none;
-				}
-
-		.dropdown {
-					position: relative;
-					display: inline-block;
-				}
-
-		.dropdown-content {
-					display: none;
-					position: absolute;
-					background-color: lightgrey;
-					min-width: 200px;
-					z-index: 1;
-							}
-
-		.dropdown-content a {
-					color: black;
-					padding: 12px 16px;
-					text-decoration: none;
-					display: block;
-							}
-
-		.dropdown-content a:hover {background-color: white;}
-		.dropdown:hover .dropdown-content {display: block;}
-		.dropdown:hover .dropbtn {background-color: grey;}
-
-</style>
 
 <div class="dropdown">
-<button class="dropbtn">Horas</button>
+<div class="dropbtn">Horas</div>
 <div class="dropdown-content">
 
 <a>1</a>
@@ -147,12 +146,11 @@
 </div><br>
 		<br>
 		Capacidad:<br>
-		<input type="text" name="capacidad"><br>
+    <input type="text" name="capacidad"><br>
+    <br>
+		<input type="submit" value="Simular"/><br>
+		<br>
 		</form>	
-		<br>
-		<button type="button">Simular</button><br>
-		<br>
-
           <div class="row">
 
             <!-- Area Chart -->
@@ -277,7 +275,7 @@
 
   <!-- Bootstrap core JavaScript-->
   <script src="{{asset('js/jquery/jquery.min.js')}}"></script>
-  <script src="{{asset('bootstrap/js/bootstrap.bundle.min.js')}}"></script>
+  <script src="{{asset('js/bootstrap/js/bootstrap.bundle.min.js')}}"></script>
 
   <!-- Core plugin JavaScript-->
   <script src="{{asset('js/jquery-easing/jquery.easing.min.js')}}"></script>
