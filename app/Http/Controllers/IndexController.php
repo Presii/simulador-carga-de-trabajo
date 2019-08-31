@@ -87,6 +87,7 @@ class IndexController extends Controller
                             $categoryResume->categoria=$categoria;
                             $categoryResume->save();
                         }
+                        
                         $c5=\App\CategoryResume::where('Categoria','A')->get()->count();
                         $c4=\App\CategoryResume::where('Categoria','B')->get()->count();
                         $c3=\App\CategoryResume::where('Categoria','C')->get()->count();
@@ -99,42 +100,9 @@ class IndexController extends Controller
                             $setcalif23=false;
                         if ($c1==$opc1)
                             $setcalif1=false;
-                            foreach ($team as $operador) 
-                            {
-                                
-                                $calificacion=$faker->passthrough(mt_rand(1, 5)); 
-                                
-                                //Guardar tarea en BD
-                                $task = new \App\Task();
-                                $task->calificacion=$calificacion;
-                                $task->idOperador = $operador->id;
-                                $task->idMes=$mes;
-                                $task->save();
-                                
-                                //j+1;
-                                $j=$j+1;
-                                
-                                //If j=n then j=1;
-                                if($j==$n)
-                                $j=1;
-                                
-                                //Procedimiento de clasificación
-                                if ($calificacion==5) 
-                                $categoria="A";
-                                if($calificacion>=4 && $calificacion<5) 
-                                $categoria="B";
-                                if($calificacion>=3 && $calificacion<4)
-                                $categoria="C";
-                                if ($calificacion>=2&&$calificacion<3)
-                                $categoria="D";
-                                if ($calificacion>=1 &&$calificacion<2)
-                                $categoria="E";
-                                $categoryResume = new \App\CategoryResume();
-                                $categoryResume->idOperador=$operador->id;
-                                $categoryResume->categoria=$categoria;
-                                $categoryResume->save();
-                            }
-
+                        
+                        if(\App\Task::where('idMes',$mes)->count() > \App\DemandMonthly::find($mes)->demanda)
+                            break;
                     }
             }
             
@@ -199,6 +167,6 @@ End For
 */
     $demandMonthly= \App\DemandMonthly::get()->pluck('demanda','id')->flatten();
     
-    return view('welcome')->with(['data_keys'=>$demandMonthly->keys(),"data"=>$demandMonthly->values(),"filter"=>$filter]);
+    return view('welcome')->with(['data_keys'=>$demandMonthly->keys(),"data"=>$demandMonthly->values(),"filter"=>$filter,'params'=>$params]);
     }
 }
